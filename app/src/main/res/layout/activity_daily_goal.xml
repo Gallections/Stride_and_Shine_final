@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:gravity="center"
+    android:background="#8ad0e6">
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <!-- Daily Goal Input Section -->
+    <EditText
+        android:id="@+id/dailyGoalInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter your Daily Goal"
+        android:inputType="number"
+        android:textSize="18sp"
+        android:visibility="visible"
+        android:background="@android:drawable/editbox_background"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Submit Button -->
+    <Button
+        android:id="@+id/setGoalButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Set Goal"
+        android:background="@drawable/round_set_goal_button"
+        android:textSize="16sp"
+        android:visibility="visible"
+        android:paddingHorizontal="20sp"
+        android:layout_marginBottom="32dp" />
+
+    <!-- TextView to display the daily goal after it's set -->
+    <TextView
+        android:id="@+id/dailyGoalText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="24sp"
+        android:textColor="#000000"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        android:layout_marginTop="40dp"/>
+
+    <!-- Space between the buttons and the content above -->
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <!-- Bottom Section for Circular Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginBottom="16dp"
+        android:layout_gravity="bottom">
+
+        <!-- Button: Stats -->
+        <Button
+            android:id="@+id/statsButton"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:text="Stats"
+            android:textSize="12sp"
+            android:backgroundTint="@android:color/holo_blue_light"
+            android:background="@drawable/circle_button_background"
+            android:layout_marginEnd="16dp" />
+
+        <!-- Spacer between the buttons -->
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"/>
+
+        <!-- Button: Home -->
+        <Button
+            android:id="@+id/homeButton"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:text="Home"
+            android:textSize="12sp"
+            android:backgroundTint="@android:color/holo_green_light"
+            android:background="@drawable/circle_button_background"
+            android:layout_marginStart="16dp" />
+    </LinearLayout>
+
+</LinearLayout>
