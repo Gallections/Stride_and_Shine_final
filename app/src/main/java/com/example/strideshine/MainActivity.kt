@@ -71,7 +71,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         stepNotification.createNotificationChannel()
         stepNotification.requestNotificationPermission(this)
 
-        // Initialize sensor manager
+        // Initialize Sensor Manager
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         stepCounterSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
         if (stepCounterSensor == null) {
@@ -93,121 +93,55 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
         // Set initial step count for daily tracking
         initialStepCount = stepCount
-
-        initializeSensor()
-    }
-
-    private fun initializeSensor() {
-        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        stepCounterSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
-
-        if (stepCounterSensor == null) {
-            Toast.makeText(this, "No step counter sensor found on this device", Toast.LENGTH_LONG).show()
-            return
-        }
-
-        // Request permission for Android 10 and above
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            requestActivityPermission()
-        } else {
-            registerStepSensor()
-        }
-    }
-
-    private fun requestActivityPermission() {
-        if (ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACTIVITY_RECOGNITION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.ACTIVITY_RECOGNITION),
-                1
-            )
-        } else {
-            registerStepSensor()
-        }
-    }
-
-    private fun registerStepSensor() {
-        stepCounterSensor?.let { sensor ->
-            sensorManager.registerListener(
-                this,
-                sensor,
-                SensorManager.SENSOR_DELAY_NORMAL
-            )
-        }
     }
 
     override fun onResume() {
         super.onResume()
-        registerStepSensor()
+        stepCounterSensor?.also { sensor ->
+            sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_UI)
+        }
     }
 
     override fun onPause() {
         super.onPause()
-        // Don't unregister the sensor as it will stop counting steps
-        // Only unregister if you want to stop counting when app is in background
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-
-        when (requestCode) {
-            1 -> {
-                if (grantResults.isNotEmpty() &&
-                    grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    registerStepSensor()
-                } else {
-                    stepCountTextView.text = "Permission denied to access step count"
-                }
-            }
-            2 -> {
-                if (stepNotification.handlePermissionResult(grantResults)) {
-                    quoteNotification.showNotification("You're important too!", "InspireBot")
-                } else {
-                    Toast.makeText(
-                        this,
-                        "Permission denied for notifications",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            }
-        }
+        sensorManager.unregisterListener(this)
     }
 
     override fun onSensorChanged(event: SensorEvent) {
         if (event.sensor.type == Sensor.TYPE_STEP_COUNTER) {
-            if (isFirstReading) {
-                initialStepCount = event.values[0].toInt()
-                isFirstReading = false
-                return
-            }
-
-            val totalSteps = event.values[0].toInt()
-            stepCount = totalSteps - initialStepCount
-            runOnUiThread { updateStepCountUI(stepCount) }
+            // The first value returned by the step counter is the total number of steps since the device was booted.
+            stepCount = event.values[0].toInt()
+            stepCountTextView.text = "Steps: $stepCount"
             onStepDetectedReset()
+
         }
     }
 
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+        // You can handle sensor accuracy changes if needed
+    }
+
+    // Handle permission result
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        if (requestCode == 1) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission granted
+            } else {
+                // Permission denied
+                stepCountTextView.text = "Permission denied to access step count"
+            }
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
+
+    // Detects step changes and checks if it's time to reset
     private fun onStepDetectedReset() {
+        // Check and reset step count if necessary
         stepCount = stepCountResetter.checkAndResetStepCount(stepCount)
-        updateStepCountUI(stepCount)
+        // Update the UI with the current step count
+        stepCountTextView.text = stepCount.toString()
         stepCountWriter.saveDailyStepCount(stepCount)
     }
 
-    private fun updateStepCountUI(stepCount: Int) {
-        stepCountTextView.text = "Steps: $stepCount"
-    }
-
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        // Handle accuracy changes if needed
-    }
 }
 
